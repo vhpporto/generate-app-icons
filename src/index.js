@@ -4,7 +4,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
-const inputImagePath = process.argv[2];
+const inputImagePath = process.argv[2] || "logo.png";
 const outputBaseDirectory = "output/icons";
 const borderRadius = 6;
 
@@ -46,9 +46,8 @@ const sizes = [
   },
 ];
 
-const generateIcons = async (config) => {
+const generateIcons = async (config, inputImagePath) => {
   const dpiDirectory = path.join(outputBaseDirectory, config.name);
-  console.log({ dpiDirectory });
   if (!fs.existsSync(dpiDirectory)) {
     fs.mkdirSync(dpiDirectory, { recursive: true });
   }
@@ -110,6 +109,11 @@ const generateIcons = async (config) => {
   console.info(`Icons for ${config.name} generated in ${dpiDirectory}!`);
 };
 
-sizes.forEach((config) => {
-  generateIcons(config);
-});
+if (require.main === module) {
+  const inputImagePathFromCLI = process.argv[2];
+  sizes.forEach((config) => {
+    generateIcons(config, inputImagePathFromCLI);
+  });
+}
+
+module.exports = generateIcons;
