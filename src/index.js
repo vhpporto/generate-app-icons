@@ -58,7 +58,7 @@ const generateIcons = async (config) => {
     .composite([
       {
         input: await sharp(inputImagePath)
-          .resize(parseInt(config.square * 0.6))
+          .resize(parseInt(config.square * 0.7))
           .toBuffer(),
         gravity: "center",
       },
