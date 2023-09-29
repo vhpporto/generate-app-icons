@@ -2,6 +2,8 @@
 
 const sharp = require("sharp");
 const fs = require("fs");
+const chalk = require("chalk");
+
 const path = require("path");
 
 const SIZES = [
@@ -39,7 +41,6 @@ const SIZES = [
 
 const OUTPUT_BASE_DIRECTORY = "output/icons";
 const BORDER_RADIUS = 6;
-const DEFAULT_INPUT_IMAGE_PATH = "logo.png";
 
 const ensureDirectoryExists = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
@@ -104,37 +105,42 @@ const createBorderedIcon = async (inputImagePath, outputPath, config) => {
     .toFile(outputPath);
 };
 
-const generateIcons = async (
-  config,
-  inputImagePath = DEFAULT_INPUT_IMAGE_PATH
-) => {
+const generateIcons = async (config, inputImagePath) => {
   const dpiDirectory = path.join(OUTPUT_BASE_DIRECTORY, config.name);
-  ensureDirectoryExists(dpiDirectory);
+  try {
+    ensureDirectoryExists(dpiDirectory);
 
-  const tasks = [
-    createSquareIcon(
-      inputImagePath,
-      path.join(dpiDirectory, "ic_launcher_foreground.png"),
-      config
-    ),
-    createRoundIcon(
-      inputImagePath,
-      path.join(dpiDirectory, "ic_launcher_round.png"),
-      config
-    ),
-    createBorderedIcon(
-      inputImagePath,
-      path.join(dpiDirectory, "ic_launcher.png"),
-      config
-    ),
-  ];
+    const tasks = [
+      createSquareIcon(
+        inputImagePath,
+        path.join(dpiDirectory, "ic_launcher_foreground.png"),
+        config
+      ),
+      createRoundIcon(
+        inputImagePath,
+        path.join(dpiDirectory, "ic_launcher_round.png"),
+        config
+      ),
+      createBorderedIcon(
+        inputImagePath,
+        path.join(dpiDirectory, "ic_launcher.png"),
+        config
+      ),
+    ];
 
-  await Promise.all(tasks);
-  console.info(`Icons for ${config.name} generated in ${dpiDirectory}!`);
+    await Promise.all(tasks);
+    console.info(
+      chalk.green(`Icons for ${config.name} generated in ${dpiDirectory}!`)
+    );
+  } catch (err) {
+    console.error(
+      chalk.red(`Error generating icons for ${config.name}: ${err.message}`)
+    );
+  }
 };
 
 if (require.main === module) {
-  const inputImagePathFromCLI = process.argv[2] || DEFAULT_INPUT_IMAGE_PATH;
+  const inputImagePathFromCLI = process.argv[2];
   const generationTasks = SIZES.map((config) =>
     generateIcons(config, inputImagePathFromCLI)
   );
