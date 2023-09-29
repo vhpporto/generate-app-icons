@@ -4,16 +4,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
-const inputImagePath = process.argv[2] || "logo.png";
-const outputBaseDirectory = "output/icons";
-const borderRadius = 6;
-
-if (!inputImagePath) {
-  console.error("Por favor, forneça o caminho para a logo.");
-  process.exit(1);
-}
-
-const sizes = [
+const SIZES = [
   {
     name: "mipmap-mdpi",
     square: 108,
@@ -46,13 +37,17 @@ const sizes = [
   },
 ];
 
-const generateIcons = async (config, inputImagePath) => {
-  const dpiDirectory = path.join(outputBaseDirectory, config.name);
-  if (!fs.existsSync(dpiDirectory)) {
-    fs.mkdirSync(dpiDirectory, { recursive: true });
-  }
+const OUTPUT_BASE_DIRECTORY = "output/icons";
+const BORDER_RADIUS = 6;
+const DEFAULT_INPUT_IMAGE_PATH = "logo.png";
 
-  // Quadrada
+const ensureDirectoryExists = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+};
+
+const createSquareIcon = async (inputImagePath, outputPath, config) => {
   await sharp({
     create: {
       width: config.square,
@@ -70,50 +65,80 @@ const generateIcons = async (config, inputImagePath) => {
       },
     ])
     .withMetadata({ density: 96 })
-    .toFile(path.join(dpiDirectory, "ic_launcher_foreground.png"));
+    .toFile(outputPath);
+};
 
-  // Redonda
+const createRoundIcon = async (inputImagePath, outputPath, config) => {
   await sharp(inputImagePath)
     .resize(config.round, config.round)
     .composite([
       {
         input: Buffer.from(
           `<svg width="${config.round}" height="${config.round}">
-                  <circle cx="${config.round / 2}" cy="${
+             <circle cx="${config.round / 2}" cy="${config.round / 2}" r="${
             config.round / 2
-          }" r="${config.round / 2}" fill="#fff"/>
-              </svg>`
+          }" fill="#fff"/>
+           </svg>`
         ),
         blend: "dest-in",
       },
     ])
     .withMetadata({ density: 96 })
-    .toFile(path.join(dpiDirectory, "ic_launcher_round.png"));
+    .toFile(outputPath);
+};
 
-  // Quadrada com BorderRadius
+const createBorderedIcon = async (inputImagePath, outputPath, config) => {
   await sharp(inputImagePath)
     .resize(config.bordered, config.bordered)
     .composite([
       {
         input: Buffer.from(
           `<svg width="${config.bordered}" height="${config.bordered}">
-                  <rect x="0" y="0" width="${config.bordered}" height="${config.bordered}" rx="${borderRadius}" ry="${borderRadius}" fill="#fff"/>
-              </svg>`
+             <rect x="0" y="0" width="${config.bordered}" height="${config.bordered}" rx="${BORDER_RADIUS}" ry="${BORDER_RADIUS}" fill="#fff"/>
+           </svg>`
         ),
         blend: "dest-in",
       },
     ])
     .withMetadata({ density: 96 })
-    .toFile(path.join(dpiDirectory, "ic_launcher.png"));
+    .toFile(outputPath);
+};
 
+const generateIcons = async (
+  config,
+  inputImagePath = DEFAULT_INPUT_IMAGE_PATH
+) => {
+  const dpiDirectory = path.join(OUTPUT_BASE_DIRECTORY, config.name);
+  ensureDirectoryExists(dpiDirectory);
+
+  const tasks = [
+    createSquareIcon(
+      inputImagePath,
+      path.join(dpiDirectory, "ic_launcher_foreground.png"),
+      config
+    ),
+    createRoundIcon(
+      inputImagePath,
+      path.join(dpiDirectory, "ic_launcher_round.png"),
+      config
+    ),
+    createBorderedIcon(
+      inputImagePath,
+      path.join(dpiDirectory, "ic_launcher.png"),
+      config
+    ),
+  ];
+
+  await Promise.all(tasks);
   console.info(`Icons for ${config.name} generated in ${dpiDirectory}!`);
 };
 
 if (require.main === module) {
-  const inputImagePathFromCLI = process.argv[2];
-  sizes.forEach((config) => {
-    generateIcons(config, inputImagePathFromCLI);
-  });
+  const inputImagePathFromCLI = process.argv[2] || DEFAULT_INPUT_IMAGE_PATH;
+  const generationTasks = SIZES.map((config) =>
+    generateIcons(config, inputImagePathFromCLI)
+  );
+  Promise.all(generationTasks);
 }
 
 module.exports = generateIcons;
