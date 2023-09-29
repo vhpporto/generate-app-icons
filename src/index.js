@@ -8,7 +8,7 @@ const inputImagePath = process.argv[2];
 const outputBaseDirectory = "output/icons";
 const borderRadius = 6;
 
-if (!pathToLogo) {
+if (!inputImagePath) {
   console.error("Por favor, forneça o caminho para a logo.");
   process.exit(1);
 }
@@ -107,7 +107,7 @@ const generateIcons = async (config) => {
     .withMetadata({ density: 96 })
     .toFile(path.join(dpiDirectory, "ic_launcher.png"));
 
-  console.log(`Icons for ${config.name} generated in ${dpiDirectory}!`);
+  console.info(`Icons for ${config.name} generated in ${dpiDirectory}!`);
 };
 
 sizes.forEach((config) => {
