@@ -1,10 +1,17 @@
+#!/usr/bin/env node
+
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
-const inputImagePath = "src/logo.png";
+const inputImagePath = process.argv[2];
 const outputBaseDirectory = "output/icons";
 const borderRadius = 6;
+
+if (!pathToLogo) {
+  console.error("Por favor, forneça o caminho para a logo.");
+  process.exit(1);
+}
 
 const sizes = [
   {
