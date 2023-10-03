@@ -1,9 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const generateIcons = require("./index"); // Se o seu arquivo original chama-se index.js
+const { generateAndroidIcons } = require("./generators/androidIcons");
+const { generateIosIcons } = require("./generators/iosIcons");
+const { ensureDirectoryExists } = require("./utils");
 const testLogoPath = path.join(__dirname, "logo.png");
 
-describe("generateIcons", () => {
+describe("generate app icons", () => {
+  // Nome atualizado
   const configMock = {
     name: "mipmap-testdpi",
     square: 50,
@@ -26,8 +29,9 @@ describe("generateIcons", () => {
     }
   });
 
-  it("should generate icons correctly", async () => {
-    await generateIcons(configMock, testLogoPath);
+  it("should generate android icons correctly", async () => {
+    // Nome atualizado
+    await generateAndroidIcons(configMock, testLogoPath);
 
     // Verifica se os arquivos foram criados
     const squareIconExists = fs.existsSync(
@@ -43,5 +47,36 @@ describe("generateIcons", () => {
     expect(squareIconExists).toBe(true);
     expect(roundIconExists).toBe(true);
     expect(borderedIconExists).toBe(true);
+  });
+});
+
+describe("generateIosIcons", () => {
+  const configMock = {
+    name: "ios-testicon.png",
+    size: 50,
+  };
+
+  const iosDirectory = path.join("output/icons", "ios");
+
+  beforeAll(() => {
+    if (fs.existsSync(iosDirectory)) {
+      fs.rmdirSync(iosDirectory, { recursive: true });
+    }
+  });
+
+  // afterAll(() => {
+  //   if (fs.existsSync(iosDirectory)) {
+  //     fs.rmdirSync(iosDirectory, { recursive: true });
+  //   }
+  // });
+
+  it("should generate Contents.json", async () => {
+    await generateIosIcons(configMock, testLogoPath);
+
+    const iconExists = fs.existsSync(path.join(iosDirectory));
+
+    console.log({ contentsJson });
+    expect(iconExists).toBe(true);
+    expect(contentsJson).toBe(true);
   });
 });
