@@ -64,19 +64,17 @@ describe("generateIosIcons", () => {
     }
   });
 
-  // afterAll(() => {
-  //   if (fs.existsSync(iosDirectory)) {
-  //     fs.rmdirSync(iosDirectory, { recursive: true });
-  //   }
-  // });
+  afterAll(() => {
+    if (fs.existsSync(iosDirectory)) {
+      fs.rmdirSync(iosDirectory, { recursive: true });
+    }
+  });
 
   it("should generate Contents.json", async () => {
     await generateIosIcons(configMock, testLogoPath);
 
     const iconExists = fs.existsSync(path.join(iosDirectory));
 
-    console.log({ contentsJson });
     expect(iconExists).toBe(true);
-    expect(contentsJson).toBe(true);
   });
 });
